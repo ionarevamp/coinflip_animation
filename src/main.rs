@@ -1,5 +1,3 @@
-#![feature(portable_simd)]
-use std::simd::{num::SimdFloat,f64x2,f64x4};
 use std::env;
 #[allow(unused_imports)]
 use std::{
@@ -100,16 +98,11 @@ fn draw_coin(x_pos: usize, y_pos: usize, radius: usize, flip_state: f64, outbuf:
 
     for i in 0..=height {
 		let mut y = 0_f64 - i as f64;
-		let mut y_simd = f64x2::splat(y);
-		let mut w_simd = f64x2::splat(width);
-		let yyww = (y_simd*w_simd).reduce_product() as f64;
 		let yy = y*y;
-//		let mut yyww = yy*ww;
+		let mut yyww = yy*ww;
 		let height = ((size as f64 / 2.2_f64) * (sin_val as f64)) as f64;
-		let h_simd = f64x2::splat(height);
-		let w_simd = f64x2::splat(width);
-    	let hh = f64x2::splat(height).reduce_product() as f64;
-		let hhww = (h_simd*w_simd).reduce_product() as f64;
+    	let hh = height*height;
+		let hhww = hh*ww;;
 
 		let mut prefix = String::new();
 
