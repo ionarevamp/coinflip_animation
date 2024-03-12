@@ -142,11 +142,17 @@ fn main() {
 	let outbuf: &mut StdoutLock = &mut io::stdout().lock();
 
     let mut args = env::args().collect::<Vec<String>>();
-    let time = (match args[1].trim().parse() {
-        Ok(num) => num,
-        Err(_) => 10u128,
-    } * 1_000_000_000u128) as u128;
 	
+	let mut time = 10u128;
+	if args.len() >= 2 {
+    	time = match args[1].trim().parse() {
+        	Ok(num) => num,
+        	Err(_) => time,
+    	} * 1_000_000_000u128;
+	} else {
+		time *= 1_000_000_000u128;
+	}
+
     let HEIGHT = spawn_read(&"tput".to_string(), &["lines".to_string()]);
     let WIDTH = spawn_read(&"tput".to_string(), &["cols".to_string()]);
     let HEIGHT: i32 = match HEIGHT.trim().parse() {
@@ -172,20 +178,18 @@ fn main() {
     let flipspeed: f64 = (0.00360f64*factor/(1_00_000) as f64)/60.0;
     clr();
 
-    let mut coin_size = 0;
-    match CENTER[0] >= CENTER[1] {
-        true => coin_size += ((CENTER[0] - (CENTER[0] % 2)) as f64 / 4.2f64) as usize,
+    let mut coin_size = match CENTER[0] >= CENTER[1] {
+        true => ((CENTER[0] - (CENTER[0] % 2)) as f64 / 4.2f64) as usize,
         
-		false => coin_size += ((CENTER[1] - (CENTER[1] % 2)) as f64 / 4.2f64) as usize,
-    }
-	if args.len() <= 3 {
-		args.push(coin_size.to_string());
+		false => ((CENTER[1] - (CENTER[1] % 2)) as f64 / 4.2f64) as usize,
+    };
+	if args.len() >= 3 {
+		
+		coin_size = match args[2].trim().parse() {
+			Ok(num) => num,
+			Err(_) => coin_size,
+		};
 	}
-	let coin_size = match args[2].trim().parse() {
-		Ok(num) => num,
-		Err(_) => coin_size,
-	};
-
 
 	for _ in 0..HEIGHT {
 		println!();
