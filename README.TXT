@@ -1,4 +1,5 @@
-Run with `coinflip_animation DURATION COINSIZE`
+Run with `coinflip_animation DURATION COINSIZE`.
+Running without arguments will default to 10 seconds and a diameter scaled to your terminal.
 
 DETAILS:
 
