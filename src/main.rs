@@ -141,7 +141,7 @@ fn draw_coin(x_pos: usize, y_pos: usize, radius: usize, flip_state: f64, outbuf:
 fn main() {
 	let outbuf: &mut StdoutLock = &mut io::stdout().lock();
 
-    let mut args = env::args().collect::<Vec<String>>();
+    let args = env::args().collect::<Vec<String>>();
 	
 	let mut time = 10u128;
 	if args.len() >= 2 {
