@@ -1,6 +1,6 @@
 [package]
 name = "coinflip_animation"
-version = "0.1.4"
+version = "0.2.0"
 edition = "2021"
 description = "A simple coinflip animation in the terminal, as a screensaver or just simply to look at."
 readme = "README.TXT"
@@ -9,3 +9,4 @@ license = "MIT"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+ctrlc = { version = "3.4.4", features = ["termination"] }

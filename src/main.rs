@@ -1,11 +1,15 @@
 #![allow(non_snake_case)]
 #![allow(unused_parens)]
-use std::env;
+
+extern crate ctrlc;
+
 use std::{
+	env,
     io::{self, Read, Write, StdoutLock},
 	hint,
 	process::{Command, Stdio},
     time::Instant,
+	sync::{Arc, atomic::{AtomicBool, Ordering}}
 };
 
 fn spawn_read(cmd: &String, args: &[String]) -> String {
@@ -18,7 +22,7 @@ fn spawn_read(cmd: &String, args: &[String]) -> String {
         .unwrap();
 
     println!(
-        "{}",
+        "{}",  // TODO: Implement Result for output
         command.wait().expect("failed to execute\n").to_string()
     );
     let mut command = command.stdout.take().unwrap();
@@ -26,9 +30,7 @@ fn spawn_read(cmd: &String, args: &[String]) -> String {
 
     return out;
 }
-fn clr() {
-    print!("\x1B[2J\x1B[1;1H"); // escape code, clear line, escape code, move to top
-}
+
 fn hide_cursor() {
     print!("\x1b[3 q"); // 3 or 4 means underline cursor
     print!("\x1b[?25l"); //low means off
@@ -148,10 +150,10 @@ fn main() {
     	time = match args[1].trim().parse() {
         	Ok(num) => num,
         	Err(_) => time,
-    	} * 1_000_000_000u128;
-	} else {
-		time *= 1_000_000_000u128;
+    	};
 	}
+	time *= 1_000_000_000u128;
+	
 
     let HEIGHT = spawn_read(&"tput".to_string(), &["lines".to_string()]);
     let WIDTH = spawn_read(&"tput".to_string(), &["cols".to_string()]);
@@ -174,9 +176,8 @@ fn main() {
 
 
     let mut flipstate: f64 = 0.0;
-	let factor = 5 as f64;
-    let flipspeed: f64 = (0.00360f64*factor/(1_00_000) as f64)/60.0;
-    clr();
+	let factor = 5_f64;
+    let flipspeed: f64 = (0.00360*factor/1_00_000.0)/60.0;
 
     let mut coin_size = match CENTER[0] >= CENTER[1] {
         true => ((CENTER[0] - (CENTER[0] % 2)) as f64 / 4.2f64) as usize,
@@ -190,21 +191,34 @@ fn main() {
 			Err(_) => coin_size,
 		};
 	}
-
-	for _ in 0..HEIGHT {
-		println!();
+	
+	for _ in 0..2 {
+		let _ = outbuf.write("\x1B[A\x1B[2K".as_bytes()); // clear `Exit status` lines
 	}
+	for _ in 0..HEIGHT-1 {
+		let _ = outbuf.write("\n".as_bytes()); 
+		// make room for animation without affecting previous output
+	}
+
+	let running = Arc::new(AtomicBool::new(true));
+	let r = running.clone();
 	
     hide_cursor();
+	
+	let _ = ctrlc::try_set_handler(move || {
+		r.store(false, Ordering::SeqCst);
+	} ).expect("Error setting ctrl-C handler.");
+
     let start = Instant::now();
     loop {
-
+		
+		
         draw_coin(CENTER[0], CENTER[1], coin_size, flipstate, outbuf);
         let _ = outbuf.flush();
 		
         flipstate = (flipspeed*start.elapsed().as_nanos() as f64) % (std::f64::consts::PI);
 		
-        if start.elapsed().as_nanos() >= time {
+        if start.elapsed().as_nanos() >= time || !running.load(Ordering::SeqCst) {
             break;
         } else {
 			hint::spin_loop();
