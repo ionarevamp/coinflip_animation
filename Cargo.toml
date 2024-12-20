@@ -1,6 +1,7 @@
 [package]
 name = "coinflip_animation"
 version = "0.2.1"
+rust-version = "1.69.0"
 edition = "2021"
 description = "A simple coinflip animation in the terminal, as a screensaver or just simply to look at."
 documentation = "https://docs.rs/crate/coinflip_animation"
